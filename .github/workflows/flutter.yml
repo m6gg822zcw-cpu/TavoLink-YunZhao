@@ -1,0 +1,97 @@
+name: TavoLink Quality Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: '3.47.2'
+
+jobs:
+  android-quality:
+    name: Android · Analyze + Test + Debug Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Verify committed native projects
+        run: |
+          test -f android/app/src/main/AndroidManifest.xml
+          test -f ios/Runner/Info.plist
+
+      - name: Resolve locked dependencies
+        run: flutter pub get --enforce-lockfile
+
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed lib test
+
+      - name: Static analysis
+        run: flutter analyze --fatal-infos
+
+      - name: Flutter unit tests
+        run: flutter test
+
+      - name: Protocol and learning contracts
+        run: |
+          python3 tool/source_selfcheck.py
+          python3 tool/runtime_contract_test.py
+          python3 tool/learning_contract_test.py
+
+      - name: Android debug build
+        run: flutter build apk --debug
+
+  ios-quality:
+    name: iOS · Analyze + Test + Simulator Build
+    runs-on: macos-latest
+    timeout-minutes: 50
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Verify committed native projects
+        run: |
+          test -f android/app/src/main/AndroidManifest.xml
+          test -f ios/Runner/Info.plist
+
+      - name: Resolve locked dependencies
+        run: flutter pub get --enforce-lockfile
+
+      - name: Static analysis
+        run: flutter analyze --fatal-infos
+
+      - name: Flutter unit tests
+        run: flutter test
+
+      - name: iOS simulator build
+        run: flutter build ios --simulator --debug

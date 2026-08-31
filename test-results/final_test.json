@@ -1,0 +1,20 @@
+{
+  "version": "1.1.0+2",
+  "date": "2026-08-31",
+  "host": {
+    "system": "Linux",
+    "machine": "x86_64",
+    "flutter": "3.47.2",
+    "dart": "3.13.2"
+  },
+  "results": [
+    {"name": "Source self-check", "status": "PASS", "summary": "233/233"},
+    {"name": "HTTP protocol contracts", "status": "PASS", "summary": "5/5"},
+    {"name": "Learning contracts", "status": "PASS", "summary": "10/10"},
+    {"name": "Dart formatting", "status": "PASS", "summary": "40 files, 0 changes"},
+    {"name": "Flutter analyze", "status": "PASS", "summary": "No issues found"},
+    {"name": "Flutter tests", "status": "PASS", "summary": "11 tests passed"},
+    {"name": "Android release APK", "status": "BLOCKED_HOST", "summary": "Sandbox blocks JVM access to external Gradle/Maven repositories; GitHub Ubuntu runner is authoritative"},
+    {"name": "iOS release / IPA", "status": "BLOCKED_HOST", "summary": "Requires macOS and Xcode; GitHub macOS runner is authoritative"}
+  ]
+}

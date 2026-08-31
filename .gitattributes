@@ -1,0 +1,6 @@
+*.bat text eol=crlf
+*.sh text eol=lf
+*.dart text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
