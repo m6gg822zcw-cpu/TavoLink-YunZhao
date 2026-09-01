@@ -8,7 +8,10 @@ void main() {
 
   test('bundled YunZhao portrait is complete and decodes', () async {
     final data = await rootBundle.load('assets/images/yunzhao_hero_v2.png');
-    final bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+    final bytes = data.buffer.asUint8List(
+      data.offsetInBytes,
+      data.lengthInBytes,
+    );
 
     // A truncated PNG can still have a valid header and nonzero file size.
     const pngEnd = <int>[0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130];
