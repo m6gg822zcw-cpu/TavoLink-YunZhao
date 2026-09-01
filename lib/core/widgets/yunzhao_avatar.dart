@@ -28,9 +28,9 @@ class YunZhaoAvatar extends StatelessWidget {
       ),
       child: ClipOval(
         child: Image.asset(
-          'assets/images/yunzhao_hero.jpg',
+          'assets/images/yunzhao_hero_v2.png',
           fit: BoxFit.cover,
-          alignment: const Alignment(.12, -.30),
+          alignment: const Alignment(.20, -.54),
         ),
       ),
     );

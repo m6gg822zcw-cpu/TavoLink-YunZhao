@@ -94,7 +94,7 @@ class _McpPageState extends ConsumerState<McpPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '灵桥 · MCP',
+                    'MCP 配置',
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   const SizedBox(height: 4),
@@ -109,6 +109,56 @@ class _McpPageState extends ConsumerState<McpPage> {
           ],
         ),
         const SizedBox(height: 18),
+        GlassCard(
+          highlight: true,
+          padding: const EdgeInsets.all(15),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      TavoPalette.blue.withValues(alpha: .32),
+                      TavoPalette.violet.withValues(alpha: .24),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: TavoPalette.line),
+                ),
+                child: const Icon(
+                  Icons.hub_rounded,
+                  color: TavoPalette.cyan,
+                ),
+              ),
+              const SizedBox(width: 13),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'MCP 连接状态',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      online ? '灵桥已建立，云昭可以调用工具' : '等待连接 Tavo MCP 服务器',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                online
+                    ? Icons.check_circle_rounded
+                    : Icons.radio_button_unchecked_rounded,
+                color: online ? TavoPalette.jade : TavoPalette.muted,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
         GlassCard(
           highlight: true,
           child: Column(

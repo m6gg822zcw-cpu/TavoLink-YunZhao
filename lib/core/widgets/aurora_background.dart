@@ -19,9 +19,11 @@ class AuroraBackground extends StatelessWidget {
               end: Alignment.bottomRight,
               colors: [
                 TavoPalette.ink,
+                Color(0xFF081536),
                 TavoPalette.midnight,
-                Color(0xFF080C20),
+                Color(0xFF090A22),
               ],
+              stops: [0, .38, .74, 1],
             ),
           ),
         ),

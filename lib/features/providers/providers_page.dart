@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:tavolink/core/network/url_policy.dart';
 import 'package:tavolink/core/theme/tavo_theme.dart';
+import 'package:tavolink/core/widgets/config_tabs.dart';
 import 'package:tavolink/core/widgets/glass_card.dart';
 import 'package:tavolink/core/widgets/status_pill.dart';
 import 'package:tavolink/features/providers/api_provider_repository.dart';
@@ -156,6 +157,8 @@ class _ProvidersPageState extends State<ProvidersPage> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 28),
       children: [
+        const ConfigTabs(searchSelected: false),
+        const SizedBox(height: 18),
         Row(
           children: [
             Expanded(
@@ -163,12 +166,12 @@ class _ProvidersPageState extends State<ProvidersPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'API 灵契',
+                    'API 配置',
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   const SizedBox(height: 4),
                   const Text(
-                    '云昭的模型能力由你独立配置',
+                    '独立模型服务 · 安全保存 · 实时测试',
                     style: TextStyle(color: TavoPalette.muted),
                   ),
                 ],

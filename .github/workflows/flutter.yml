@@ -95,3 +95,44 @@ jobs:
 
       - name: iOS simulator build
         run: flutter build ios --simulator --debug
+
+      - name: Launch app and capture iOS simulator screenshot
+        shell: bash
+        run: |
+          DEVICE_ID="$(python3 - <<'PY'
+          import json
+          import subprocess
+
+          payload = json.loads(
+              subprocess.check_output(
+                  ['xcrun', 'simctl', 'list', 'devices', 'available', '-j'],
+                  text=True,
+              )
+          )
+          for runtime_devices in payload['devices'].values():
+              for device in runtime_devices:
+                  if device.get('isAvailable') and device['name'].startswith('iPhone'):
+                      print(device['udid'])
+                      raise SystemExit(0)
+          raise SystemExit('No available iPhone simulator found')
+          PY
+          )"
+
+          xcrun simctl boot "$DEVICE_ID" 2>/dev/null || true
+          xcrun simctl bootstatus "$DEVICE_ID" -b
+          xcrun simctl install "$DEVICE_ID" build/ios/iphonesimulator/Runner.app
+          xcrun simctl launch "$DEVICE_ID" com.tavolink.tavolink
+          sleep 8
+
+          mkdir -p dist
+          xcrun simctl io "$DEVICE_ID" screenshot \
+            dist/TavoLink-YunZhao-iOS-Simulator.png
+          test -s dist/TavoLink-YunZhao-iOS-Simulator.png
+
+      - name: Upload iOS runtime screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: TavoLink-YunZhao-iOS-Runtime-Screenshot
+          path: dist/TavoLink-YunZhao-iOS-Simulator.png
+          if-no-files-found: error
+          retention-days: 90

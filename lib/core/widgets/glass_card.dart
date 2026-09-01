@@ -5,8 +5,8 @@ import 'package:tavolink/core/theme/tavo_theme.dart';
 class GlassCard extends StatelessWidget {
   const GlassCard({
     required this.child,
-    this.padding = const EdgeInsets.all(18),
-    this.radius = 24,
+    this.padding = const EdgeInsets.all(16),
+    this.radius = 22,
     this.onTap,
     this.highlight = false,
     super.key,
@@ -23,7 +23,7 @@ class GlassCard extends StatelessWidget {
     final card = ClipRRect(
       borderRadius: BorderRadius.circular(radius),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
         child: Container(
           padding: padding,
           decoration: BoxDecoration(
@@ -32,20 +32,21 @@ class GlassCard extends StatelessWidget {
               end: Alignment.bottomRight,
               colors: highlight
                   ? [
-                      TavoPalette.blue.withValues(alpha: .18),
-                      TavoPalette.violet.withValues(alpha: .10),
-                      const Color(0xB30C1730),
+                      TavoPalette.blue.withValues(alpha: .20),
+                      TavoPalette.violet.withValues(alpha: .12),
+                      const Color(0xC20A1630),
                     ]
                   : [
-                      Colors.white.withValues(alpha: .075),
-                      const Color(0xAA0B1630),
+                      Colors.white.withValues(alpha: .085),
+                      const Color(0xC20A1530),
                     ],
             ),
             borderRadius: BorderRadius.circular(radius),
             border: Border.all(
               color: highlight
                   ? TavoPalette.blue.withValues(alpha: .45)
-                  : TavoPalette.line,
+                  : TavoPalette.blue.withValues(alpha: .22),
+              width: highlight ? 1.15 : .85,
             ),
             boxShadow: const [
               BoxShadow(
