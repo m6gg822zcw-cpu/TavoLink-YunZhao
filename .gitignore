@@ -1,0 +1,17 @@
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+coverage/
+android/.gradle/
+android/local.properties
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/ephemeral/
+*.iml
+.DS_Store
+.idea/
+.vscode/
+__pycache__/
+*.pyc
