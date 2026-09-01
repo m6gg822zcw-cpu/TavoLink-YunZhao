@@ -4,10 +4,12 @@ import 'package:tavolink/features/search/search_models.dart';
 
 abstract interface class SearchService {
   Future<List<SearchResultItem>> search(String query, {int limit = 5});
+  void close();
 }
 
 SearchService createSearchService(SearchConfig config, {Dio? dio}) {
   return switch (config.backend) {
+    SearchBackend.duckDuckGo => DuckDuckGoSearchService(dio: dio),
     SearchBackend.tavily => TavilySearchService(
       apiKey: config.apiKey ?? '',
       dio: dio,
@@ -28,10 +30,105 @@ SearchService createSearchService(SearchConfig config, {Dio? dio}) {
   };
 }
 
+class DuckDuckGoSearchService implements SearchService {
+  DuckDuckGoSearchService({Dio? dio}) : _dio = dio ?? Dio();
+  final Dio _dio;
+
+  @override
+  void close() => _dio.close(force: true);
+
+  @override
+  Future<List<SearchResultItem>> search(String query, {int limit = 5}) async {
+    final normalized = query.trim();
+    if (normalized.isEmpty) throw StateError('搜索关键词为空');
+    final response = await _dio.getUri<String>(
+      Uri.https('html.duckduckgo.com', '/html/', {'q': normalized}),
+      options: Options(
+        responseType: ResponseType.plain,
+        headers: const {
+          'Accept': 'text/html,application/xhtml+xml',
+          'User-Agent':
+              'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148',
+        },
+        sendTimeout: const Duration(seconds: 12),
+        receiveTimeout: const Duration(seconds: 20),
+      ),
+    );
+    final results = parseDuckDuckGoHtml(response.data ?? '', limit: limit);
+    if (results.isEmpty) {
+      throw StateError('免密搜索暂未返回结果，请稍后重试或切换 SearXNG');
+    }
+    return results;
+  }
+}
+
+List<SearchResultItem> parseDuckDuckGoHtml(String html, {int limit = 5}) {
+  if (html.isEmpty || limit <= 0) return const [];
+  final linkPattern = RegExp(
+    r'''<a(?=[^>]*class=["'][^"']*result__a[^"']*["'])(?=[^>]*href=["']([^"']+)["'])[^>]*>(.*?)</a>''',
+    caseSensitive: false,
+    dotAll: true,
+  );
+  final snippetPattern = RegExp(
+    r'''<(?:a|div)(?=[^>]*class=["'][^"']*result__snippet[^"']*["'])[^>]*>(.*?)</(?:a|div)>''',
+    caseSensitive: false,
+    dotAll: true,
+  );
+  final links = linkPattern.allMatches(html).toList();
+  final snippets = snippetPattern.allMatches(html).toList();
+  final results = <SearchResultItem>[];
+  for (var index = 0; index < links.length && results.length < limit; index++) {
+    final match = links[index];
+    final url = _resolveDuckDuckGoUrl(_decodeHtml(match.group(1) ?? ''));
+    final title = _plainText(match.group(2) ?? '');
+    if (title.isEmpty || !url.hasScheme || !url.hasAuthority) continue;
+    final snippet = index < snippets.length
+        ? _plainText(snippets[index].group(1) ?? '')
+        : '';
+    results.add(SearchResultItem(title: title, url: url, snippet: snippet));
+  }
+  return results;
+}
+
+Uri _resolveDuckDuckGoUrl(String raw) {
+  final normalized = raw.startsWith('//') ? 'https:$raw' : raw;
+  final parsed = Uri.tryParse(normalized) ?? Uri();
+  final redirected = parsed.queryParameters['uddg'];
+  return redirected == null ? parsed : (Uri.tryParse(redirected) ?? parsed);
+}
+
+String _plainText(String value) => _decodeHtml(
+  value.replaceAll(RegExp(r'<[^>]+>'), ' ').replaceAll(RegExp(r'\s+'), ' ').trim(),
+);
+
+String _decodeHtml(String value) {
+  var decoded = value
+      .replaceAll('&amp;', '&')
+      .replaceAll('&quot;', '"')
+      .replaceAll('&#39;', "'")
+      .replaceAll('&#x27;', "'")
+      .replaceAll('&lt;', '<')
+      .replaceAll('&gt;', '>')
+      .replaceAll('&nbsp;', ' ');
+  decoded = decoded.replaceAllMapped(RegExp(r'&#(x?[0-9a-fA-F]+);'), (match) {
+    final raw = match.group(1) ?? '';
+    final radix = raw.startsWith('x') ? 16 : 10;
+    final digits = raw.startsWith('x') ? raw.substring(1) : raw;
+    final code = int.tryParse(digits, radix: radix);
+    return code == null || code > 0x10ffff
+        ? match.group(0)!
+        : String.fromCharCode(code);
+  });
+  return decoded;
+}
+
 class TavilySearchService implements SearchService {
   TavilySearchService({required this.apiKey, Dio? dio}) : _dio = dio ?? Dio();
   final String apiKey;
   final Dio _dio;
+
+  @override
+  void close() => _dio.close(force: true);
 
   @override
   Future<List<SearchResultItem>> search(String query, {int limit = 5}) async {
@@ -65,6 +162,9 @@ class BraveSearchService implements SearchService {
   BraveSearchService({required this.apiKey, Dio? dio}) : _dio = dio ?? Dio();
   final String apiKey;
   final Dio _dio;
+
+  @override
+  void close() => _dio.close(force: true);
 
   @override
   Future<List<SearchResultItem>> search(String query, {int limit = 5}) async {
@@ -102,6 +202,9 @@ class SearxngSearchService implements SearchService {
   SearxngSearchService({required this.baseUrl, Dio? dio}) : _dio = dio ?? Dio();
   final Uri baseUrl;
   final Dio _dio;
+
+  @override
+  void close() => _dio.close(force: true);
 
   @override
   Future<List<SearchResultItem>> search(String query, {int limit = 5}) async {
@@ -142,6 +245,9 @@ class CustomSearchService implements SearchService {
   final Uri baseUrl;
   final String? apiKey;
   final Dio _dio;
+
+  @override
+  void close() => _dio.close(force: true);
 
   @override
   Future<List<SearchResultItem>> search(String query, {int limit = 5}) async {

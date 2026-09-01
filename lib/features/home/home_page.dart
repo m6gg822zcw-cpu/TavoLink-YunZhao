@@ -10,22 +10,35 @@ import 'package:tavolink/features/mcp/mcp_repository.dart';
 import 'package:tavolink/features/providers/api_provider_repository.dart';
 import 'package:tavolink/features/search/search_repository.dart';
 
-class HomePage extends ConsumerWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends ConsumerState<HomePage> {
+  late final Future<List<Object?>> _configFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _configFuture = Future.wait<Object?>([
+      const McpConfigRepository().load(),
+      const ApiProviderRepository().load(),
+      const SearchRepository().load(),
+    ]);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final mcpState = ref.watch(mcpControllerProvider);
     final liveMcp = switch (mcpState) {
       AsyncData(:final value) => value,
       _ => null,
     };
     return FutureBuilder<List<Object?>>(
-      future: Future.wait<Object?>([
-        const McpConfigRepository().load(),
-        const ApiProviderRepository().load(),
-        const SearchRepository().load(),
-      ]),
+      future: _configFuture,
       builder: (context, snapshot) {
         final values = snapshot.data;
         final mcpConfigured = values != null && values[0] != null;
@@ -124,8 +137,8 @@ class HomePage extends ConsumerWidget {
                         const SizedBox(height: 3),
                         Text(
                           searchConfigured
-                              ? '搜索工具已配置，可由云昭自动调用'
-                              : '配置 Tavily / Brave / SearXNG / 自定义接口',
+                              ? '免密直搜已启用，可由云昭自动调用'
+                              : 'DuckDuckGo 免密直搜 / 可选搜索 API',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ],

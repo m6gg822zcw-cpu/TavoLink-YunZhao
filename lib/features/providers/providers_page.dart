@@ -104,7 +104,13 @@ class _ProvidersPageState extends State<ProvidersPage> {
       final effective = config.copyWith(
         apiKey: config.apiKey ?? existing?.apiKey,
       );
-      final models = await OpenAiCompatibleClient(effective).listModels();
+      final client = OpenAiCompatibleClient(effective);
+      late final List<String> models;
+      try {
+        models = await client.listModels();
+      } finally {
+        client.close();
+      }
       if (!mounted) return;
       if (models.isEmpty) {
         _toast('连接成功，但没有返回模型');

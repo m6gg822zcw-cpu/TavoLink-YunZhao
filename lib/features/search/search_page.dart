@@ -17,7 +17,7 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   final repo = const SearchRepository();
-  SearchBackend backend = SearchBackend.tavily;
+  SearchBackend backend = SearchBackend.duckDuckGo;
   final apiKey = TextEditingController();
   final baseUrl = TextEditingController();
   bool enabled = true;
@@ -88,9 +88,13 @@ class _SearchPageState extends State<SearchPage> {
       if (config == null) return;
       await repo.save(config);
       final effective = await repo.load() ?? config;
-      final results = await createSearchService(
-        effective,
-      ).search('Tavo MCP', limit: 3);
+      final service = createSearchService(effective);
+      late final List<SearchResultItem> results;
+      try {
+        results = await service.search('Tavo MCP', limit: 3);
+      } finally {
+        service.close();
+      }
       if (!mounted) return;
       setState(() {
         configured = true;
@@ -279,6 +283,7 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   String _caption(SearchBackend backend) => switch (backend) {
+    SearchBackend.duckDuckGo => '无需 API Key · 开箱即用 · 可随时关闭',
     SearchBackend.tavily => 'Agent 友好 · 结构化结果',
     SearchBackend.brave => '独立搜索索引 · 隐私友好',
     SearchBackend.searxng => '开源聚合 · 支持自建实例',

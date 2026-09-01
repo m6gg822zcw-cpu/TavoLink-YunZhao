@@ -38,5 +38,26 @@ void main() {
         isFalse,
       );
     });
+
+    test('detects credentials placed in endpoint query parameters', () {
+      expect(
+        hasSensitiveQueryParameter(
+          Uri.parse('https://example.com/mcp?token=fixture'),
+        ),
+        isTrue,
+      );
+      expect(
+        hasSensitiveQueryParameter(
+          Uri.parse('https://example.com/mcp?api_key=fixture'),
+        ),
+        isTrue,
+      );
+      expect(
+        hasSensitiveQueryParameter(
+          Uri.parse('https://example.com/mcp?transport=http&version=2'),
+        ),
+        isFalse,
+      );
+    });
   });
 }

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:tavolink/features/agent/agent_models.dart';
 import 'package:tavolink/features/learning/learning_service.dart';
 import 'package:tavolink/features/mcp/mcp_client.dart';
+import 'package:tavolink/features/mcp/mcp_debug_output.dart';
 import 'package:tavolink/features/mcp/mcp_models.dart';
 import 'package:tavolink/features/mcp/mcp_repository.dart';
 import 'package:tavolink/features/providers/api_provider_repository.dart';
@@ -42,22 +43,27 @@ class AgentService {
 
     final warnings = <String>[];
     McpClient? mcpClient;
+    var debugOutput = McpDebugOutput.withoutCredentials();
     List<McpTool> mcpTools = const [];
     if (allowMcp) {
       final mcpConfig = await _mcpRepository.load();
       if (mcpConfig != null) {
+        debugOutput = McpDebugOutput(mcpConfig);
         try {
           mcpClient = McpClient(mcpConfig);
           await mcpClient.connect();
           mcpTools = await mcpClient.listTools();
         } catch (e) {
-          warnings.add('Tavo MCP 暂不可用：$e');
+          warnings.add('Tavo MCP 暂不可用：${debugOutput.render(e.toString())}');
+          mcpClient?.close();
           mcpClient = null;
         }
       }
     }
 
     SearchService? searchService;
+    OpenAiCompatibleClient? modelClient;
+    try {
     final searchConfig = allowSearch ? await _searchRepository.load() : null;
     if (searchConfig != null && searchConfig.enabled) {
       try {
@@ -141,10 +147,10 @@ class AgentService {
       return AgentTurnResult(content: answer, warnings: warnings);
     }
 
-    final client = OpenAiCompatibleClient(apiConfig);
+    modelClient = OpenAiCompatibleClient(apiConfig);
     var lastContent = '';
     for (var round = 0; round < 6; round++) {
-      final completion = await client.createCompletion(
+      final completion = await modelClient.createCompletion(
         messages: messages,
         tools: tools,
       );
@@ -169,7 +175,7 @@ class AgentService {
             name: call.name,
             label: label,
             status: ToolActivityStatus.running,
-            detail: jsonEncode(call.arguments),
+            detail: _preview(debugOutput.render(call.arguments)),
           ),
         );
         try {
@@ -201,7 +207,7 @@ class AgentService {
               name: call.name,
               label: label,
               status: ToolActivityStatus.success,
-              detail: _preview(encoded),
+              detail: _preview(debugOutput.render(result)),
               elapsedMs: sw.elapsedMilliseconds,
             ),
           );
@@ -219,7 +225,7 @@ class AgentService {
           });
         } catch (e) {
           sw.stop();
-          final errorText = '工具执行失败：$e';
+          final errorText = '工具执行失败：${debugOutput.render(e.toString())}';
           onToolActivity?.call(
             ToolActivity(
               id: call.id,
@@ -246,14 +252,32 @@ class AgentService {
         }
       }
     }
-    return finish(lastContent.trim().isEmpty ? '工具调用轮次已达到上限。' : lastContent);
+      return finish(
+        lastContent.trim().isEmpty ? '工具调用轮次已达到上限。' : lastContent,
+      );
+    } finally {
+      // Each chat turn owns its MCP connection. Force-close it even when the
+      // model, search provider, tool call, or learning hook throws.
+      mcpClient?.close();
+      searchService?.close();
+      modelClient?.close();
+    }
   }
 
   String _safeEncode(Object value) {
     try {
-      return jsonEncode(value);
+      final encoded = jsonEncode(value);
+      if (encoded.length <= 64 * 1024) return encoded;
+      return jsonEncode({
+        'truncated': true,
+        'message': '工具结果超过 64 KiB，仅向模型提供前段内容。',
+        'preview': encoded.substring(0, 64 * 1024),
+      });
     } catch (_) {
-      return value.toString();
+      final text = value.toString();
+      return text.length <= 64 * 1024
+          ? text
+          : '${text.substring(0, 64 * 1024)}…';
     }
   }
 

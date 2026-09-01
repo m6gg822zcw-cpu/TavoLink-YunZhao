@@ -7,6 +7,8 @@ class OpenAiCompatibleClient {
   final ApiProviderConfig config;
   final Dio _dio;
 
+  void close() => _dio.close(force: true);
+
   Map<String, String> get _headers => {
     'Content-Type': 'application/json',
     if (config.apiKey?.isNotEmpty == true)

@@ -36,6 +36,13 @@ bool isAllowedEndpoint(Uri uri, {bool allowPrivateHttp = true}) {
       isPrivateOrLoopbackHost(uri.host);
 }
 
+bool hasSensitiveQueryParameter(Uri uri) => uri.queryParameters.keys.any(
+  (key) => RegExp(
+    r'token|authorization|password|secret|api[_-]?key|signature',
+    caseSensitive: false,
+  ).hasMatch(key),
+);
+
 List<int>? _parseIpv4(String host) {
   final parts = host.split('.');
   if (parts.length != 4) return null;

@@ -9,10 +9,15 @@ class AppShell extends StatelessWidget {
 
   static const paths = ['/', '/chat', '/mcp', '/providers', '/search'];
 
+  void _go(BuildContext context, int index) {
+    FocusManager.instance.primaryFocus?.unfocus();
+    context.go(paths[index]);
+  }
+
   @override
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
-    var index = paths.indexOf(location);
+    var index = location.startsWith('/mcp/') ? 2 : paths.indexOf(location);
     if (index < 0) index = 0;
 
     return AuroraBackground(
@@ -47,7 +52,7 @@ class AppShell extends StatelessWidget {
               backgroundColor: Colors.transparent,
               indicatorColor: TavoPalette.violet.withValues(alpha: .18),
               selectedIndex: index,
-              onDestinationSelected: (i) => context.go(paths[i]),
+              onDestinationSelected: (i) => _go(context, i),
               destinations: const [
                 NavigationDestination(
                   icon: Icon(Icons.home_rounded),

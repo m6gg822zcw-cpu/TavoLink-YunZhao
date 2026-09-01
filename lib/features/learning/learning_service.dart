@@ -40,8 +40,9 @@ class LearningService {
     final api = await _apiRepository.load();
     if (api == null) return;
 
+    final client = OpenAiCompatibleClient(api);
     try {
-      final completion = await OpenAiCompatibleClient(api).createCompletion(
+      final completion = await client.createCompletion(
         messages: [
           {
             'role': 'system',
@@ -87,6 +88,8 @@ class LearningService {
       }
     } catch (_) {
       // Learning is best-effort and must never break the main conversation path.
+    } finally {
+      client.close();
     }
   }
 

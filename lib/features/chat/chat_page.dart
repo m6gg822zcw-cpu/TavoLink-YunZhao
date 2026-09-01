@@ -26,6 +26,9 @@ class _ChatPageState extends State<ChatPage> {
   bool allowMcp = true;
   bool allowSearch = true;
   bool allowLearning = true;
+  bool _scrollScheduled = false;
+
+  void _dismissKeyboard() => FocusManager.instance.primaryFocus?.unfocus();
 
   @override
   void initState() {
@@ -68,6 +71,7 @@ class _ChatPageState extends State<ChatPage> {
       activities.clear();
       messages.add(userMessage);
     });
+    _dismissKeyboard();
     unawaited(repository.save(messages));
     _jumpToBottom();
     try {
@@ -127,11 +131,14 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void _jumpToBottom() {
+    if (_scrollScheduled) return;
+    _scrollScheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollScheduled = false;
       if (!scroll.hasClients) return;
       scroll.animateTo(
         scroll.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 260),
+        duration: const Duration(milliseconds: 150),
         curve: Curves.easeOutCubic,
       );
     });
@@ -163,8 +170,12 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
+    final keyboardVisible = MediaQuery.viewInsetsOf(context).bottom > 0;
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: _dismissKeyboard,
+      child: Column(
+        children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(18, 12, 12, 8),
           child: Row(
@@ -204,22 +215,29 @@ class _ChatPageState extends State<ChatPage> {
           ),
         ),
         Expanded(
-          child: ListView(
+          child: ListView.builder(
             controller: scroll,
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
-            children: [
-              for (final message in messages) ...[
-                _MessageBubble(message: message),
-                const SizedBox(height: 13),
-              ],
-              if (activities.isNotEmpty) ...[
-                for (final activity in activities) ...[
-                  _ToolActivityCard(activity: activity),
-                  const SizedBox(height: 9),
-                ],
-              ],
-              if (busy) const _ThinkingRow(),
-            ],
+            itemCount: messages.length + activities.length + (busy ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index < messages.length) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 13),
+                  child: _MessageBubble(message: messages[index]),
+                );
+              }
+              final activityIndex = index - messages.length;
+              if (activityIndex < activities.length) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 9),
+                  child: _ToolActivityCard(
+                    activity: activities[activityIndex],
+                  ),
+                );
+              }
+              return const _ThinkingRow();
+            },
           ),
         ),
         Padding(
@@ -282,10 +300,19 @@ class _ChatPageState extends State<ChatPage> {
                         decoration: const InputDecoration.collapsed(
                           hintText: '发消息给云昭…',
                         ),
+                        onTapOutside: (_) => _dismissKeyboard(),
                         onSubmitted: (_) => _send(),
                       ),
                     ),
                     const SizedBox(width: 8),
+                    if (keyboardVisible) ...[
+                      IconButton(
+                        tooltip: '收起键盘',
+                        onPressed: _dismissKeyboard,
+                        icon: const Icon(Icons.keyboard_hide_rounded),
+                      ),
+                      const SizedBox(width: 2),
+                    ],
                     IconButton.filled(
                       onPressed: busy ? null : _send,
                       icon: const Icon(Icons.arrow_upward_rounded),
@@ -296,7 +323,8 @@ class _ChatPageState extends State<ChatPage> {
             ],
           ),
         ),
-      ],
+        ],
+      ),
     );
   }
 }

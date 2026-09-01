@@ -49,6 +49,7 @@ void main() {
         url: Uri.parse('http://127.0.0.1:${server.port}/mcp'),
       ),
     );
+    addTearDown(client.close);
     final connection = await client.connect();
     expect(connection.protocolVersion, '2026-07-28');
     final tools = await client.listTools();
@@ -86,6 +87,7 @@ void main() {
         url: Uri.parse('http://127.0.0.1:${server.port}/mcp'),
       ),
     );
+    addTearDown(client.close);
     final connection = await client.connect();
     expect(connection.protocolVersion, 'direct-jsonrpc');
   });

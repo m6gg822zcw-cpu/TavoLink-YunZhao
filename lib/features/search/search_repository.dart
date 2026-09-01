@@ -16,7 +16,9 @@ class SearchRepository {
   Future<SearchConfig?> load() async {
     final prefs = SharedPreferencesAsync();
     final rawBackend = await prefs.getString(_backend);
-    if (rawBackend == null) return null;
+    if (rawBackend == null) {
+      return const SearchConfig(backend: SearchBackend.duckDuckGo);
+    }
     final backend = SearchBackend.values
         .where((e) => e.name == rawBackend)
         .firstOrNull;

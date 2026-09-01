@@ -6,6 +6,8 @@ class SecureStore {
   static const _storage = FlutterSecureStorage(
     aOptions: AndroidOptions(),
     iOptions: IOSOptions(
+      // Keep the existing accessibility class so upgrades can still read
+      // credentials already stored by released builds. It remains device-bound.
       accessibility: KeychainAccessibility.first_unlock_this_device,
     ),
   );

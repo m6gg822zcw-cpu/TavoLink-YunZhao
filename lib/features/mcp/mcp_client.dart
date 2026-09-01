@@ -40,6 +40,8 @@ class McpClient {
   int _nextId = 1;
   List<McpTool>? _toolCache;
 
+  void close() => _dio.close(force: true);
+
   Future<McpConnectResult> connect() async {
     if (config.transport == McpTransport.directJsonRpc) return _connectDirect();
     if (config.transport == McpTransport.streamableHttp) {
@@ -253,6 +255,9 @@ class McpClient {
   Map<String, dynamic> _normalizeResponse(dynamic data, int expectedId) {
     final text = data?.toString().trim() ?? '';
     if (text.isEmpty) throw const McpException('服务器返回空响应');
+    if (text.length > 4 * 1024 * 1024) {
+      throw const McpException('服务器响应超过 4 MiB 安全上限');
+    }
     if (!text.startsWith('data:') && !text.contains('\ndata:')) {
       final decoded = jsonDecode(text);
       if (decoded is Map) return decoded.cast<String, dynamic>();

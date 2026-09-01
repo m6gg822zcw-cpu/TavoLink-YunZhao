@@ -5,6 +5,7 @@ import 'package:tavolink/features/chat/chat_page.dart';
 import 'package:tavolink/features/home/home_page.dart';
 import 'package:tavolink/features/learning/learning_page.dart';
 import 'package:tavolink/features/mcp/mcp_page.dart';
+import 'package:tavolink/features/mcp/mcp_developer_page.dart';
 import 'package:tavolink/features/providers/providers_page.dart';
 import 'package:tavolink/features/search/search_page.dart';
 import 'package:tavolink/features/settings/settings_page.dart';
@@ -19,6 +20,7 @@ final _router = GoRouter(
         GoRoute(path: '/', builder: (_, _) => const HomePage()),
         GoRoute(path: '/chat', builder: (_, _) => const ChatPage()),
         GoRoute(path: '/mcp', builder: (_, _) => const McpPage()),
+        GoRoute(path: '/mcp/develop', builder: (_, _) => const McpDeveloperPage()),
         GoRoute(path: '/providers', builder: (_, _) => const ProvidersPage()),
         GoRoute(path: '/search', builder: (_, _) => const SearchPage()),
         GoRoute(path: '/settings', builder: (_, _) => const SettingsPage()),

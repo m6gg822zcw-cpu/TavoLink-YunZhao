@@ -1,7 +1,8 @@
-enum SearchBackend { tavily, brave, searxng, custom }
+enum SearchBackend { duckDuckGo, tavily, brave, searxng, custom }
 
 extension SearchBackendLabel on SearchBackend {
   String get label => switch (this) {
+    SearchBackend.duckDuckGo => 'DuckDuckGo 免密直搜',
     SearchBackend.tavily => 'Tavily',
     SearchBackend.brave => 'Brave Search',
     SearchBackend.searxng => 'SearXNG',
