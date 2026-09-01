@@ -174,7 +174,8 @@ class _McpDeveloperPageState extends State<McpDeveloperPage> {
       }
       arguments = decoded;
       final required = tool.inputSchema['required'];
-      if (required is List && required.any((key) => !arguments.containsKey(key))) {
+      if (required is List &&
+          required.any((key) => !arguments.containsKey(key))) {
         setState(() => _error = '缺少必填参数，请对照 inputSchema 填写。');
         return;
       }
@@ -219,15 +220,17 @@ class _McpDeveloperPageState extends State<McpDeveloperPage> {
           _result = output.render(response);
           final status = response['isError'] == true ? '工具返回错误' : '调用完成';
           if (response['isError'] == true) _error = '工具返回 isError，请查看结果。';
-          _record(output.render('$status · ${tool.name} · ${watch.elapsedMilliseconds} ms'));
+          _record(
+            output.render(
+              '$status · ${tool.name} · ${watch.elapsedMilliseconds} ms',
+            ),
+          );
         });
       } catch (error) {
         if (!mounted) return;
         setState(() {
           _result = '';
-          _error = output.render(
-            '调用失败或响应中断：$error\n服务器可能已执行操作，请先确认结果再重试。',
-          );
+          _error = output.render('调用失败或响应中断：$error\n服务器可能已执行操作，请先确认结果再重试。');
           _record('调用异常 · ${watch.elapsedMilliseconds} ms');
         });
       }
@@ -259,7 +262,12 @@ class _McpDeveloperPageState extends State<McpDeveloperPage> {
               },
               icon: const Icon(Icons.arrow_back_rounded),
             ),
-            Expanded(child: Text('MCP 开发', style: Theme.of(context).textTheme.headlineSmall)),
+            Expanded(
+              child: Text(
+                'MCP 开发',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+            ),
             StatusPill(label: _busy ? '处理中' : '调试工作台', active: _client != null),
           ],
         ),
@@ -269,12 +277,17 @@ class _McpDeveloperPageState extends State<McpDeveloperPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('云昭 · MCP 工具开发与联调', style: TextStyle(fontWeight: FontWeight.w800)),
+              const Text(
+                '云昭 · MCP 工具开发与联调',
+                style: TextStyle(fontWeight: FontWeight.w800),
+              ),
               const SizedBox(height: 8),
               Text(_connection),
               const SizedBox(height: 8),
-              const Text('自动读取已保存 Token，不显示凭据。工具调用仅由你手动确认发起。',
-                style: TextStyle(color: TavoPalette.muted)),
+              const Text(
+                '自动读取已保存 Token，不显示凭据。工具调用仅由你手动确认发起。',
+                style: TextStyle(color: TavoPalette.muted),
+              ),
               const SizedBox(height: 12),
               Wrap(
                 spacing: 10,
@@ -286,10 +299,12 @@ class _McpDeveloperPageState extends State<McpDeveloperPage> {
                     label: Text(_busy ? '处理中…' : '连接 / 刷新工具'),
                   ),
                   OutlinedButton.icon(
-                    onPressed: _busy ? null : () {
-                      _dismissKeyboard();
-                      context.go('/mcp');
-                    },
+                    onPressed: _busy
+                        ? null
+                        : () {
+                            _dismissKeyboard();
+                            context.go('/mcp');
+                          },
                     icon: const Icon(Icons.key_rounded),
                     label: const Text('管理 Token'),
                   ),
@@ -319,23 +334,34 @@ class _McpDeveloperPageState extends State<McpDeveloperPage> {
                   initialValue: _selected,
                   isExpanded: true,
                   decoration: const InputDecoration(labelText: '选择工具'),
-                  items: _tools.map((tool) => DropdownMenuItem(
-                    value: tool,
-                    child: Text(_render(tool.name), overflow: TextOverflow.ellipsis),
-                  )).toList(),
-                  onChanged: _busy ? null : (tool) => setState(() {
-                    _selected = tool;
-                    _arguments.text = '{}';
-                    _error = null;
-                    _result = '';
-                  }),
+                  items: _tools
+                      .map(
+                        (tool) => DropdownMenuItem(
+                          value: tool,
+                          child: Text(
+                            _render(tool.name),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: _busy
+                      ? null
+                      : (tool) => setState(() {
+                          _selected = tool;
+                          _arguments.text = '{}';
+                          _error = null;
+                          _result = '';
+                        }),
                 ),
                 const SizedBox(height: 10),
                 Text(_render(_selected?.description ?? '服务器未提供工具说明')),
                 ExpansionTile(
                   tilePadding: EdgeInsets.zero,
                   title: const Text('参数说明 · inputSchema'),
-                  children: [SelectableText(_render(_selected?.inputSchema ?? const {}))],
+                  children: [
+                    SelectableText(_render(_selected?.inputSchema ?? const {})),
+                  ],
                 ),
                 const SizedBox(height: 10),
                 TextField(
@@ -375,41 +401,53 @@ class _McpDeveloperPageState extends State<McpDeveloperPage> {
         ],
         if (_result.isNotEmpty) ...[
           const SizedBox(height: 14),
-          GlassCard(child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('调用结果 · 已隐藏已知凭据', style: TextStyle(fontWeight: FontWeight.w800)),
-              const SizedBox(height: 10),
-              SelectableText(_result),
-            ],
-          )),
+          GlassCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '调用结果 · 已隐藏已知凭据',
+                  style: TextStyle(fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 10),
+                SelectableText(_result),
+              ],
+            ),
+          ),
         ],
         const SizedBox(height: 14),
-        GlassCard(child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(children: [
-              const Expanded(child: Text('调试记录 · 仅保留本页最近 20 条')),
-              IconButton(
-                tooltip: '清空调试记录',
-                onPressed: () => setState(() {
-                  _logs.clear();
-                  _result = '';
-                  _error = null;
-                }),
-                icon: const Icon(Icons.delete_outline_rounded),
+        GlassCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Expanded(child: Text('调试记录 · 仅保留本页最近 20 条')),
+                  IconButton(
+                    tooltip: '清空调试记录',
+                    onPressed: () => setState(() {
+                      _logs.clear();
+                      _result = '';
+                      _error = null;
+                    }),
+                    icon: const Icon(Icons.delete_outline_rounded),
+                  ),
+                ],
               ),
-            ]),
-            const Text('记录与结果不写入文件、不上传、不加入长期记忆；退出页面即清除。',
-              style: TextStyle(color: TavoPalette.muted)),
-            const SizedBox(height: 8),
-            if (_logs.isEmpty) const Text('暂无调用'),
-            for (final log in _logs) Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Text(log),
-            ),
-          ],
-        )),
+              const Text(
+                '记录与结果不写入文件、不上传、不加入长期记忆；退出页面即清除。',
+                style: TextStyle(color: TavoPalette.muted),
+              ),
+              const SizedBox(height: 8),
+              if (_logs.isEmpty) const Text('暂无调用'),
+              for (final log in _logs)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Text(log),
+                ),
+            ],
+          ),
+        ),
       ],
     );
   }

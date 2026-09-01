@@ -4,11 +4,11 @@ import 'package:tavolink/features/mcp/mcp_models.dart';
 /// Only redacted, bounded strings are displayed in the developer console.
 class McpDebugOutput {
   McpDebugOutput(McpServerConfig config)
-    : _secrets = _credentialValues(config)
-        .where((value) => value.isNotEmpty)
-        .toSet()
-        .toList()
-      ..sort((a, b) => b.length.compareTo(a.length));
+    : _secrets =
+          _credentialValues(
+              config,
+            ).where((value) => value.isNotEmpty).toSet().toList()
+            ..sort((a, b) => b.length.compareTo(a.length));
 
   McpDebugOutput.withoutCredentials() : _secrets = const [];
 
@@ -19,7 +19,8 @@ class McpDebugOutput {
     if (config.bearerToken?.isNotEmpty == true) yield config.bearerToken!;
     for (final header in config.headers.entries) {
       if (!_sensitiveName(header.key) &&
-          !header.value.trimLeft().toLowerCase().startsWith('bearer ')) continue;
+          !header.value.trimLeft().toLowerCase().startsWith('bearer '))
+        continue;
       yield header.value;
       final withoutBearer = header.value.trim().replaceFirst(
         RegExp(r'^Bearer\s+', caseSensitive: false),
@@ -53,10 +54,12 @@ class McpDebugOutput {
 
   Object? _redactFields(Object? value) {
     if (value is Map) {
-      return value.map((key, item) => MapEntry(
-        key.toString(),
-        _sensitiveKey(key.toString()) ? '[已隐藏]' : _redactFields(item),
-      ));
+      return value.map(
+        (key, item) => MapEntry(
+          key.toString(),
+          _sensitiveKey(key.toString()) ? '[已隐藏]' : _redactFields(item),
+        ),
+      );
     }
     if (value is List) return value.map(_redactFields).toList();
     return value;

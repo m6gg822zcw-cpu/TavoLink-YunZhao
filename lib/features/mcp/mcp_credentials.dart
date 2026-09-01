@@ -4,7 +4,8 @@ import 'package:tavolink/core/storage/secure_store.dart';
 /// Credentials are isolated by endpoint, including its path and query.
 /// A different server must never inherit another server's authorization.
 class McpCredentials {
-  const McpCredentials({SecureStore store = const SecureStore()}) : _store = store;
+  const McpCredentials({SecureStore store = const SecureStore()})
+    : _store = store;
   final SecureStore _store;
 
   String _key(Uri url, String field) {
@@ -13,10 +14,10 @@ class McpCredentials {
   }
 
   static String normalizeToken(String raw) {
-    final token = raw.trim().replaceFirst(
-      RegExp(r'^Bearer\s+', caseSensitive: false),
-      '',
-    ).trim();
+    final token = raw
+        .trim()
+        .replaceFirst(RegExp(r'^Bearer\s+', caseSensitive: false), '')
+        .trim();
     if (token.contains('\r') || token.contains('\n')) {
       throw const FormatException('Token 不能包含换行');
     }

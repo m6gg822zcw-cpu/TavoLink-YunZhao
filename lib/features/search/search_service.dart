@@ -98,7 +98,10 @@ Uri _resolveDuckDuckGoUrl(String raw) {
 }
 
 String _plainText(String value) => _decodeHtml(
-  value.replaceAll(RegExp(r'<[^>]+>'), ' ').replaceAll(RegExp(r'\s+'), ' ').trim(),
+  value
+      .replaceAll(RegExp(r'<[^>]+>'), ' ')
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .trim(),
 );
 
 String _decodeHtml(String value) {

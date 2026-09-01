@@ -23,18 +23,21 @@ void main() {
   final first = Uri.parse('https://one.example/mcp');
   final second = Uri.parse('https://two.example/mcp');
 
-  test('keeps blank input for same endpoint; does not leak to another', () async {
-    final store = _MemorySecureStore();
-    final credentials = McpCredentials(store: store);
-    await credentials.saveToken(first, 'Bearer fixture-one');
-    await credentials.saveToken(first, '');
-    await credentials.saveToken(second, null);
-    expect(await credentials.tokenFor(first), 'fixture-one');
-    expect(await credentials.tokenFor(second), isNull);
-    expect(await McpCredentials(store: store).tokenFor(first), 'fixture-one');
-    await credentials.saveToken(first, 'fixture-two');
-    expect(await credentials.tokenFor(first), 'fixture-two');
-  });
+  test(
+    'keeps blank input for same endpoint; does not leak to another',
+    () async {
+      final store = _MemorySecureStore();
+      final credentials = McpCredentials(store: store);
+      await credentials.saveToken(first, 'Bearer fixture-one');
+      await credentials.saveToken(first, '');
+      await credentials.saveToken(second, null);
+      expect(await credentials.tokenFor(first), 'fixture-one');
+      expect(await credentials.tokenFor(second), isNull);
+      expect(await McpCredentials(store: store).tokenFor(first), 'fixture-one');
+      await credentials.saveToken(first, 'fixture-two');
+      expect(await credentials.tokenFor(first), 'fixture-two');
+    },
+  );
 
   test('isolates endpoint paths and clears only the selected token', () async {
     final credentials = McpCredentials(store: _MemorySecureStore());
@@ -70,21 +73,26 @@ void main() {
   test('headers use endpoint-scoped secure storage', () async {
     final credentials = McpCredentials(store: _MemorySecureStore());
     await credentials.saveHeaders(first, {'X-Api-Key': 'header-fixture'});
-    expect(await credentials.headersFor(first), {'X-Api-Key': 'header-fixture'});
+    expect(await credentials.headersFor(first), {
+      'X-Api-Key': 'header-fixture',
+    });
     expect(await credentials.headersFor(second), isNull);
   });
 
-  test('discards malformed secure headers without blocking config recovery', () async {
-    final store = _MemorySecureStore();
-    final credentials = McpCredentials(store: store);
-    await credentials.saveHeaders(first, {'X-Good': 'fixture'});
-    final headerKey = store.values.keys.singleWhere(
-      (key) => key.contains('.headers.'),
-    );
-    store.values[headerKey] = '{broken';
-    expect(await credentials.headersFor(first), isNull);
-    expect(store.values.containsKey(headerKey), isFalse);
-  });
+  test(
+    'discards malformed secure headers without blocking config recovery',
+    () async {
+      final store = _MemorySecureStore();
+      final credentials = McpCredentials(store: store);
+      await credentials.saveHeaders(first, {'X-Good': 'fixture'});
+      final headerKey = store.values.keys.singleWhere(
+        (key) => key.contains('.headers.'),
+      );
+      store.values[headerKey] = '{broken';
+      expect(await credentials.headersFor(first), isNull);
+      expect(store.values.containsKey(headerKey), isFalse);
+    },
+  );
 
   test('normalizes Bearer prefix and rejects header injection', () {
     expect(McpCredentials.normalizeToken('  bearer fixture  '), 'fixture');
@@ -93,9 +101,8 @@ void main() {
       throwsFormatException,
     );
     expect(
-      () => McpCredentials.normalizeToken(
-        List.filled(16 * 1024 + 1, 'x').join(),
-      ),
+      () =>
+          McpCredentials.normalizeToken(List.filled(16 * 1024 + 1, 'x').join()),
       throwsFormatException,
     );
     expect(

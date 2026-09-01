@@ -25,7 +25,8 @@ class McpConfigRepository {
     if (uri == null ||
         !isAllowedEndpoint(uri) ||
         hasSensitiveQueryParameter(uri) ||
-        uri.fragment.isNotEmpty) return null;
+        uri.fragment.isNotEmpty)
+      return null;
     final name = await prefs.getString(_nameKey) ?? 'Tavo MCP';
     final rawHeaders = await prefs.getString(_headersKey);
     await _credentials.migrateLegacyToken(uri);
@@ -40,8 +41,8 @@ class McpConfigRepository {
         headers = rawHeaders == null
             ? <String, String>{}
             : (jsonDecode(rawHeaders) as Map).map(
-              (k, v) => MapEntry(k.toString(), v.toString()),
-            );
+                (k, v) => MapEntry(k.toString(), v.toString()),
+              );
         await _credentials.saveHeaders(uri, headers);
       } catch (_) {
         // A malformed legacy value is discarded instead of blocking recovery.
@@ -66,7 +67,9 @@ class McpConfigRepository {
         config.url.fragment.isNotEmpty) {
       throw const FormatException('MCP 地址无效；Token 必须使用安全 Token 字段');
     }
-    final normalizedToken = McpCredentials.normalizeToken(config.bearerToken ?? '');
+    final normalizedToken = McpCredentials.normalizeToken(
+      config.bearerToken ?? '',
+    );
     // Migrate existing credentials before updating the saved endpoint.
     final previous = await load();
     if (previous == null) {

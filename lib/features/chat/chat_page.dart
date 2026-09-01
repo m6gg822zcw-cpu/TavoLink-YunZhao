@@ -176,153 +176,153 @@ class _ChatPageState extends State<ChatPage> {
       onTap: _dismissKeyboard,
       child: Column(
         children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(18, 12, 12, 8),
-          child: Row(
-            children: [
-              const YunZhaoAvatar(size: 42),
-              const SizedBox(width: 11),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '与云昭对话',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 1),
-                    Text(
-                      busy ? '正在思考与调用工具…' : '云昭 · TavoLink 智能体',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
-                ),
-              ),
-              StatusPill(
-                label: busy ? '忙碌' : '在线',
-                active: true,
-                icon: busy ? Icons.auto_awesome_rounded : Icons.circle,
-              ),
-              IconButton(
-                onPressed: _clear,
-                tooltip: '清空对话',
-                icon: const Icon(
-                  Icons.delete_sweep_outlined,
-                  color: TavoPalette.muted,
-                ),
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: ListView.builder(
-            controller: scroll,
-            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
-            itemCount: messages.length + activities.length + (busy ? 1 : 0),
-            itemBuilder: (context, index) {
-              if (index < messages.length) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 13),
-                  child: _MessageBubble(message: messages[index]),
-                );
-              }
-              final activityIndex = index - messages.length;
-              if (activityIndex < activities.length) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 9),
-                  child: _ToolActivityCard(
-                    activity: activities[activityIndex],
-                  ),
-                );
-              }
-              return const _ThinkingRow();
-            },
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: _ModeChip(
-                      icon: Icons.hub_rounded,
-                      label: 'MCP',
-                      enabled: allowMcp,
-                      onTap: () => setState(() => allowMcp = !allowMcp),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _ModeChip(
-                      icon: Icons.travel_explore_rounded,
-                      label: '联网',
-                      enabled: allowSearch,
-                      onTap: () => setState(() => allowSearch = !allowSearch),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _ModeChip(
-                      icon: Icons.psychology_alt_rounded,
-                      label: '学习',
-                      enabled: allowLearning,
-                      onTap: () =>
-                          setState(() => allowLearning = !allowLearning),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              GlassCard(
-                radius: 24,
-                padding: const EdgeInsets.fromLTRB(10, 7, 7, 7),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.only(left: 4, bottom: 8),
-                      child: Icon(
-                        Icons.local_fire_department_rounded,
-                        color: TavoPalette.violet,
-                        size: 21,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 12, 12, 8),
+            child: Row(
+              children: [
+                const YunZhaoAvatar(size: 42),
+                const SizedBox(width: 11),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '与云昭对话',
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
+                      const SizedBox(height: 1),
+                      Text(
+                        busy ? '正在思考与调用工具…' : '云昭 · TavoLink 智能体',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+                StatusPill(
+                  label: busy ? '忙碌' : '在线',
+                  active: true,
+                  icon: busy ? Icons.auto_awesome_rounded : Icons.circle,
+                ),
+                IconButton(
+                  onPressed: _clear,
+                  tooltip: '清空对话',
+                  icon: const Icon(
+                    Icons.delete_sweep_outlined,
+                    color: TavoPalette.muted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              controller: scroll,
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
+              itemCount: messages.length + activities.length + (busy ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index < messages.length) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 13),
+                    child: _MessageBubble(message: messages[index]),
+                  );
+                }
+                final activityIndex = index - messages.length;
+                if (activityIndex < activities.length) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 9),
+                    child: _ToolActivityCard(
+                      activity: activities[activityIndex],
                     ),
-                    const SizedBox(width: 6),
+                  );
+                }
+                return const _ThinkingRow();
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+            child: Column(
+              children: [
+                Row(
+                  children: [
                     Expanded(
-                      child: TextField(
-                        controller: input,
-                        minLines: 1,
-                        maxLines: 5,
-                        textInputAction: TextInputAction.newline,
-                        decoration: const InputDecoration.collapsed(
-                          hintText: '发消息给云昭…',
-                        ),
-                        onTapOutside: (_) => _dismissKeyboard(),
-                        onSubmitted: (_) => _send(),
+                      child: _ModeChip(
+                        icon: Icons.hub_rounded,
+                        label: 'MCP',
+                        enabled: allowMcp,
+                        onTap: () => setState(() => allowMcp = !allowMcp),
                       ),
                     ),
                     const SizedBox(width: 8),
-                    if (keyboardVisible) ...[
-                      IconButton(
-                        tooltip: '收起键盘',
-                        onPressed: _dismissKeyboard,
-                        icon: const Icon(Icons.keyboard_hide_rounded),
+                    Expanded(
+                      child: _ModeChip(
+                        icon: Icons.travel_explore_rounded,
+                        label: '联网',
+                        enabled: allowSearch,
+                        onTap: () => setState(() => allowSearch = !allowSearch),
                       ),
-                      const SizedBox(width: 2),
-                    ],
-                    IconButton.filled(
-                      onPressed: busy ? null : _send,
-                      icon: const Icon(Icons.arrow_upward_rounded),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _ModeChip(
+                        icon: Icons.psychology_alt_rounded,
+                        label: '学习',
+                        enabled: allowLearning,
+                        onTap: () =>
+                            setState(() => allowLearning = !allowLearning),
+                      ),
                     ),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                GlassCard(
+                  radius: 24,
+                  padding: const EdgeInsets.fromLTRB(10, 7, 7, 7),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(left: 4, bottom: 8),
+                        child: Icon(
+                          Icons.local_fire_department_rounded,
+                          color: TavoPalette.violet,
+                          size: 21,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: TextField(
+                          controller: input,
+                          minLines: 1,
+                          maxLines: 5,
+                          textInputAction: TextInputAction.newline,
+                          decoration: const InputDecoration.collapsed(
+                            hintText: '发消息给云昭…',
+                          ),
+                          onTapOutside: (_) => _dismissKeyboard(),
+                          onSubmitted: (_) => _send(),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      if (keyboardVisible) ...[
+                        IconButton(
+                          tooltip: '收起键盘',
+                          onPressed: _dismissKeyboard,
+                          icon: const Icon(Icons.keyboard_hide_rounded),
+                        ),
+                        const SizedBox(width: 2),
+                      ],
+                      IconButton.filled(
+                        onPressed: busy ? null : _send,
+                        icon: const Icon(Icons.arrow_upward_rounded),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
         ],
       ),
     );

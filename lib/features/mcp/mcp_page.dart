@@ -52,18 +52,23 @@ class _McpPageState extends ConsumerState<McpPage> {
     Future.microtask(() async {
       try {
         final config = await ref
-          .read(mcpControllerProvider.notifier)
-          .loadConfig();
+            .read(mcpControllerProvider.notifier)
+            .loadConfig();
         if (!mounted || config == null) return;
         name.text = config.name;
         url.text = config.url.toString();
-        headers.text = const JsonEncoder.withIndent('  ').convert(config.headers);
+        headers.text = const JsonEncoder.withIndent(
+          '  ',
+        ).convert(config.headers);
         _savedHeaders = headers.text;
         setState(() {
           transport = config.transport;
           _savedUrl = config.url.toString();
-          _tokenSaved = config.bearerToken?.isNotEmpty == true ||
-              config.headers.keys.any((key) => key.toLowerCase() == 'authorization');
+          _tokenSaved =
+              config.bearerToken?.isNotEmpty == true ||
+              config.headers.keys.any(
+                (key) => key.toLowerCase() == 'authorization',
+              );
         });
       } catch (_) {
         if (mounted) _toast('无法读取安全配置，请检查设备安全存储后重试');
@@ -106,12 +111,12 @@ class _McpPageState extends ConsumerState<McpPage> {
     try {
       final controller = ref.read(mcpControllerProvider.notifier);
       final config = McpServerConfig(
-            name: name.text.trim().isEmpty ? 'Tavo MCP' : name.text.trim(),
-            url: uri,
-            transport: transport,
-            bearerToken: token.text.trim().isEmpty ? null : token.text.trim(),
-            headers: extra,
-          );
+        name: name.text.trim().isEmpty ? 'Tavo MCP' : name.text.trim(),
+        url: uri,
+        transport: transport,
+        bearerToken: token.text.trim().isEmpty ? null : token.text.trim(),
+        headers: extra,
+      );
       if (testConnection) {
         await controller.saveAndTest(config);
       } else {
@@ -126,10 +131,15 @@ class _McpPageState extends ConsumerState<McpPage> {
       token.clear();
       setState(() {
         _savedUrl = saved.url.toString();
-        _savedHeaders = const JsonEncoder.withIndent('  ').convert(saved.headers);
+        _savedHeaders = const JsonEncoder.withIndent(
+          '  ',
+        ).convert(saved.headers);
         _endpointEdited = false;
-        _tokenSaved = saved.bearerToken?.isNotEmpty == true ||
-            saved.headers.keys.any((key) => key.toLowerCase() == 'authorization');
+        _tokenSaved =
+            saved.bearerToken?.isNotEmpty == true ||
+            saved.headers.keys.any(
+              (key) => key.toLowerCase() == 'authorization',
+            );
       });
       _toast(_tokenSaved ? '配置和 Token 已安全保存，下次自动使用' : '服务器配置已保存（未设置 Token）');
     } catch (_) {
@@ -145,16 +155,25 @@ class _McpPageState extends ConsumerState<McpPage> {
         !isAllowedEndpoint(uri) ||
         hasSensitiveQueryParameter(uri) ||
         uri.fragment.isNotEmpty ||
-        _saving) return;
+        _saving)
+      return;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('清除已保存 Token？'),
-        content: const Text('将清除当前服务器的 Token 和自定义 Authorization Header。'
-          '其他服务器凭据不会受影响；重新连接时可能需要再次输入。'),
+        content: const Text(
+          '将清除当前服务器的 Token 和自定义 Authorization Header。'
+          '其他服务器凭据不会受影响；重新连接时可能需要再次输入。',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('取消')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('清除')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('清除'),
+          ),
         ],
       ),
     );
@@ -164,10 +183,16 @@ class _McpPageState extends ConsumerState<McpPage> {
       await ref.read(mcpControllerProvider.notifier).clearToken(uri);
       if (!mounted) return;
       token.clear();
-      final currentHeaders = jsonDecode(headers.text.trim().isEmpty ? '{}' : headers.text);
+      final currentHeaders = jsonDecode(
+        headers.text.trim().isEmpty ? '{}' : headers.text,
+      );
       if (currentHeaders is Map) {
-        currentHeaders.removeWhere((key, _) => key.toString().toLowerCase() == 'authorization');
-        headers.text = const JsonEncoder.withIndent('  ').convert(currentHeaders);
+        currentHeaders.removeWhere(
+          (key, _) => key.toString().toLowerCase() == 'authorization',
+        );
+        headers.text = const JsonEncoder.withIndent(
+          '  ',
+        ).convert(currentHeaders);
       }
       setState(() => _tokenSaved = false);
       _toast('当前服务器 Token 已清除');
@@ -217,10 +242,12 @@ class _McpPageState extends ConsumerState<McpPage> {
         ),
         const SizedBox(height: 18),
         OutlinedButton.icon(
-          onPressed: busy ? null : () {
-            FocusManager.instance.primaryFocus?.unfocus();
-            context.go('/mcp/develop');
-          },
+          onPressed: busy
+              ? null
+              : () {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  context.go('/mcp/develop');
+                },
           icon: const Icon(Icons.developer_mode_rounded),
           label: const Text('进入 MCP 开发工作台'),
         ),
@@ -256,9 +283,7 @@ class _McpPageState extends ConsumerState<McpPage> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      online
-                          ? '灵桥已建立，云昭可以调用工具'
-                          : '等待连接 Tavo MCP 服务器',
+                      online ? '灵桥已建立，云昭可以调用工具' : '等待连接 Tavo MCP 服务器',
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
@@ -316,23 +341,36 @@ class _McpPageState extends ConsumerState<McpPage> {
                 obscureText: true,
                 autocorrect: false,
                 enableSuggestions: false,
-                onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                onTapOutside: (_) =>
+                    FocusManager.instance.primaryFocus?.unfocus(),
                 decoration: InputDecoration(
                   labelText: 'Bearer Token',
-                  hintText: tokenSavedHere ? '已保存；留空沿用，输入新值替换' : '可粘贴 Token 或 Bearer Token',
+                  hintText: tokenSavedHere
+                      ? '已保存；留空沿用，输入新值替换'
+                      : '可粘贴 Token 或 Bearer Token',
                   helperText: '仅保存在本机安全存储，不会写入仓库',
                 ),
               ),
-              Row(children: [
-                Expanded(child: Text(
-                  tokenSavedHere ? 'Token 已保存 · 重启后自动读取' : '当前地址未确认保存 Token',
-                  style: TextStyle(color: tokenSavedHere ? TavoPalette.jade : TavoPalette.muted),
-                )),
-                TextButton(
-                  onPressed: busy ? null : _clearToken,
-                  child: const Text('清除 Token'),
-                ),
-              ]),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      tokenSavedHere
+                          ? 'Token 已保存 · 重启后自动读取'
+                          : '当前地址未确认保存 Token',
+                      style: TextStyle(
+                        color: tokenSavedHere
+                            ? TavoPalette.jade
+                            : TavoPalette.muted,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: busy ? null : _clearToken,
+                    child: const Text('清除 Token'),
+                  ),
+                ],
+              ),
               const SizedBox(height: 12),
               DropdownButtonFormField<McpTransport>(
                 key: ValueKey(transport),
@@ -343,8 +381,9 @@ class _McpPageState extends ConsumerState<McpPage> {
                       (e) => DropdownMenuItem(value: e, child: Text(e.label)),
                     )
                     .toList(),
-                onChanged: busy ? null : (value) =>
-                    setState(() => transport = value ?? transport),
+                onChanged: busy
+                    ? null
+                    : (value) => setState(() => transport = value ?? transport),
               ),
               const SizedBox(height: 12),
               TextField(
