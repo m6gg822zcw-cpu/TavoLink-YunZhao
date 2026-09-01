@@ -254,7 +254,9 @@ class AgentService {
           }
         }
       }
-      return await finish(lastContent.trim().isEmpty ? '工具调用轮次已达到上限。' : lastContent);
+      return await finish(
+        lastContent.trim().isEmpty ? '工具调用轮次已达到上限。' : lastContent,
+      );
     } finally {
       // Each chat turn owns its MCP connection. Force-close it even when the
       // model, search provider, tool call, or learning hook throws.
