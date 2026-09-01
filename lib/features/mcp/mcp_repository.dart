@@ -25,8 +25,9 @@ class McpConfigRepository {
     if (uri == null ||
         !isAllowedEndpoint(uri) ||
         hasSensitiveQueryParameter(uri) ||
-        uri.fragment.isNotEmpty)
+        uri.fragment.isNotEmpty) {
       return null;
+    }
     final name = await prefs.getString(_nameKey) ?? 'Tavo MCP';
     final rawHeaders = await prefs.getString(_headersKey);
     await _credentials.migrateLegacyToken(uri);

@@ -155,8 +155,9 @@ class _McpPageState extends ConsumerState<McpPage> {
         !isAllowedEndpoint(uri) ||
         hasSensitiveQueryParameter(uri) ||
         uri.fragment.isNotEmpty ||
-        _saving)
+        _saving) {
       return;
+    }
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(

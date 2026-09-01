@@ -19,8 +19,9 @@ class McpDebugOutput {
     if (config.bearerToken?.isNotEmpty == true) yield config.bearerToken!;
     for (final header in config.headers.entries) {
       if (!_sensitiveName(header.key) &&
-          !header.value.trimLeft().toLowerCase().startsWith('bearer '))
+          !header.value.trimLeft().toLowerCase().startsWith('bearer ')) {
         continue;
+      }
       yield header.value;
       final withoutBearer = header.value.trim().replaceFirst(
         RegExp(r'^Bearer\s+', caseSensitive: false),
