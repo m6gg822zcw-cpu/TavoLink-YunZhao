@@ -119,7 +119,36 @@ jobs:
           )"
 
           xcrun simctl boot "$DEVICE_ID" 2>/dev/null || true
-          xcrun simctl bootstatus "$DEVICE_ID" -b
+          READY=false
+          for attempt in {1..90}; do
+            STATE="$(DEVICE_ID="$DEVICE_ID" python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+
+          payload = json.loads(
+              subprocess.check_output(
+                  ['xcrun', 'simctl', 'list', 'devices', '-j'],
+                  text=True,
+              )
+          )
+          target = os.environ['DEVICE_ID']
+          for runtime_devices in payload['devices'].values():
+              for device in runtime_devices:
+                  if device['udid'] == target:
+                      print(device['state'])
+                      raise SystemExit(0)
+          raise SystemExit('Selected iPhone simulator disappeared')
+          PY
+            )"
+            if [[ "$STATE" == "Booted" ]]; then
+              READY=true
+              break
+            fi
+            sleep 2
+          done
+          [[ "$READY" == "true" ]]
+
           xcrun simctl install "$DEVICE_ID" build/ios/iphonesimulator/Runner.app
           xcrun simctl launch "$DEVICE_ID" com.tavolink.tavolink
           sleep 8
