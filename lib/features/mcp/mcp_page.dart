@@ -127,10 +127,7 @@ class _McpPageState extends ConsumerState<McpPage> {
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: TavoPalette.line),
                 ),
-                child: const Icon(
-                  Icons.hub_rounded,
-                  color: TavoPalette.cyan,
-                ),
+                child: const Icon(Icons.hub_rounded, color: TavoPalette.cyan),
               ),
               const SizedBox(width: 13),
               Expanded(
@@ -143,9 +140,7 @@ class _McpPageState extends ConsumerState<McpPage> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      online
-                          ? '灵桥已建立，云昭可以调用工具'
-                          : '等待连接 Tavo MCP 服务器',
+                      online ? '灵桥已建立，云昭可以调用工具' : '等待连接 Tavo MCP 服务器',
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
