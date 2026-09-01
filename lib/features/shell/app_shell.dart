@@ -21,10 +21,17 @@ class AppShell extends StatelessWidget {
         body: SafeArea(bottom: false, child: child),
         bottomNavigationBar: SafeArea(
           top: false,
-          minimum: const EdgeInsets.fromLTRB(10, 0, 10, 8),
+          minimum: const EdgeInsets.fromLTRB(10, 0, 10, 9),
           child: Container(
             decoration: BoxDecoration(
-              color: TavoPalette.midnight.withValues(alpha: .94),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  TavoPalette.midnight.withValues(alpha: .97),
+                  const Color(0xFF091530).withValues(alpha: .97),
+                ],
+              ),
               borderRadius: BorderRadius.circular(25),
               border: Border.all(color: TavoPalette.line),
               boxShadow: [
@@ -36,7 +43,7 @@ class AppShell extends StatelessWidget {
               ],
             ),
             child: NavigationBar(
-              height: 64,
+              height: 66,
               backgroundColor: Colors.transparent,
               indicatorColor: TavoPalette.violet.withValues(alpha: .18),
               selectedIndex: index,

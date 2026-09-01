@@ -34,6 +34,15 @@ def jpeg_size(path):
         offset += length
     return None
 
+def png_size(path):
+    data = path.read_bytes()
+    if len(data) < 24 or data[:8] != b'\x89PNG\r\n\x1a\n':
+        return None
+    return (
+        int.from_bytes(data[16:20], 'big'),
+        int.from_bytes(data[20:24], 'big'),
+    )
+
 def ok(name, condition, detail=''):
     checks.append((name, bool(condition), detail))
     if not condition:
@@ -41,11 +50,11 @@ def ok(name, condition, detail=''):
 
 pub = (ROOT/'pubspec.yaml').read_text()
 ok('pubspec version 1.1.0', 'version: 1.1.0+2' in pub)
-ok('YunZhao asset declared', 'assets/images/yunzhao_hero.jpg' in pub)
-asset = ROOT/'assets/images/yunzhao_hero.jpg'
+ok('YunZhao clean asset declared', 'assets/images/yunzhao_hero_v2.png' in pub)
+asset = ROOT/'assets/images/yunzhao_hero_v2.png'
 ok('YunZhao asset exists', asset.exists())
 if asset.exists():
-    dimensions = jpeg_size(asset)
+    dimensions = png_size(asset)
     ok('YunZhao asset readable', dimensions is not None and dimensions[0] >= 600 and dimensions[1] >= 700, f'{dimensions}')
 
 all_dart = list((ROOT/'lib').rglob('*.dart'))

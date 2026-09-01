@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 
 abstract final class TavoPalette {
-  static const ink = Color(0xFF050817);
-  static const midnight = Color(0xFF081126);
-  static const navy = Color(0xFF0D1B38);
+  static const ink = Color(0xFF030716);
+  static const midnight = Color(0xFF071128);
+  static const navy = Color(0xFF0B1A38);
   static const panel = Color(0xFF101D3A);
   static const panelSoft = Color(0xFF15264A);
   static const line = Color(0x334E79C7);
   static const moon = Color(0xFFF6F4FF);
-  static const cyan = Color(0xFF88E9FF);
-  static const blue = Color(0xFF6E8DFF);
-  static const violet = Color(0xFFA886FF);
+  static const cyan = Color(0xFF82E7FF);
+  static const blue = Color(0xFF6689FF);
+  static const violet = Color(0xFF9F7CFF);
   static const sakura = Color(0xFFFFB7E6);
   static const gold = Color(0xFFFFD79B);
   static const jade = Color(0xFF7AF0C7);
@@ -93,8 +93,18 @@ abstract final class TavoTheme {
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
           backgroundColor: TavoPalette.blue,
           foregroundColor: Colors.white,
+          textStyle: const TextStyle(fontWeight: FontWeight.w800),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: TavoPalette.blue,
+          side: BorderSide(color: TavoPalette.blue.withValues(alpha: .46)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
         ),
       ),

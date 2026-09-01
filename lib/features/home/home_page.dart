@@ -32,25 +32,26 @@ class HomePage extends ConsumerWidget {
         final apiConfigured = values != null && values[1] != null;
         final searchConfigured = values != null && values[2] != null;
         return ListView(
-          padding: const EdgeInsets.fromLTRB(18, 12, 18, 28),
+          padding: const EdgeInsets.fromLTRB(18, 10, 18, 34),
           children: [
             Row(
               children: [
-                const YunZhaoAvatar(size: 44),
-                const SizedBox(width: 11),
+                const YunZhaoAvatar(size: 46),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'TavoLink',
-                        style: Theme.of(context).textTheme.headlineSmall,
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(fontSize: 25, letterSpacing: -1),
                       ),
                       const Text(
                         '云昭 · 智能体',
                         style: TextStyle(
                           color: TavoPalette.gold,
-                          fontSize: 12,
+                          fontSize: 13,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -63,7 +64,7 @@ class HomePage extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             _HeroCard(onChat: () => context.go('/chat')),
             const SizedBox(height: 14),
             Row(
@@ -193,15 +194,18 @@ class _HeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 330,
+      height: 348,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: TavoPalette.violet.withValues(alpha: .42)),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: TavoPalette.violet.withValues(alpha: .52),
+          width: 1.1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: TavoPalette.violet.withValues(alpha: .20),
-            blurRadius: 34,
+            color: TavoPalette.violet.withValues(alpha: .24),
+            blurRadius: 38,
             offset: const Offset(0, 15),
           ),
         ],
@@ -210,9 +214,9 @@ class _HeroCard extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           Image.asset(
-            'assets/images/yunzhao_hero.jpg',
+            'assets/images/yunzhao_hero_v2.png',
             fit: BoxFit.cover,
-            alignment: const Alignment(.12, -.2),
+            alignment: const Alignment(.18, -.48),
           ),
           const DecoratedBox(
             decoration: BoxDecoration(
@@ -220,9 +224,9 @@ class _HeroCard extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0x14000000),
-                  Color(0x22050A1A),
-                  Color(0xE8050A1A),
+                  Color(0x06000000),
+                  Color(0x33050A1A),
+                  Color(0xF2050A1A),
                 ],
               ),
             ),
@@ -263,12 +267,20 @@ class _HeroCard extends StatelessWidget {
               children: [
                 const Text(
                   '夜色很好。',
-                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.w900),
+                  style: TextStyle(
+                    fontSize: 27,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.6,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 const Text(
                   '要让云昭替你查些什么，还是去 Tavo 里做点什么？',
-                  style: TextStyle(color: Color(0xFFD8DDF2), height: 1.45),
+                  style: TextStyle(
+                    color: Color(0xFFE1E5F8),
+                    height: 1.42,
+                    fontSize: 13,
+                  ),
                 ),
                 const SizedBox(height: 14),
                 SizedBox(
