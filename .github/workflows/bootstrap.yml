@@ -1,4 +1,4 @@
-name: Bootstrap TavoLink Project
+name: Bootstrap + Build TavoLink
 
 on:
   workflow_dispatch:
@@ -6,50 +6,170 @@ on:
 permissions:
   contents: write
 
-jobs:
-  unpack-project:
-    runs-on: ubuntu-latest
+concurrency:
+  group: tavolink-bootstrap-build
+  cancel-in-progress: false
 
+env:
+  ARCHIVE: TavoLink-YunZhao-v1.1.0-GitHub-AutoBuild.zip
+  FLUTTER_VERSION: 3.47.1
+
+jobs:
+  bootstrap-android:
+    name: Bootstrap source + Android release APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
 
-      - name: Show files
+      - name: Unpack and commit source tree
+        shell: bash
         run: |
-          echo "Current repository:"
-          ls -lah
+          set -euo pipefail
+          if [[ -f "$ARCHIVE" ]]; then
+            rm -rf /tmp/tavolink_unpack
+            mkdir -p /tmp/tavolink_unpack
+            unzip -t "$ARCHIVE"
+            unzip -q "$ARCHIVE" -d /tmp/tavolink_unpack
+            cp -a /tmp/tavolink_unpack/TavoLink-YunZhao-GitHub-Build-v1.1.0/. .
+            rm -rf /tmp/tavolink_unpack
+            rm -f "$ARCHIVE"
 
-      - name: Unpack TavoLink package
-        run: |
-          rm -rf /tmp/tavolink_unpack
-          mkdir -p /tmp/tavolink_unpack
+            # Keep only this already-authorized workflow in the repository.
+            # The GITHUB_TOKEN can write source files but cannot create/update
+            # additional files under .github/workflows without Workflows permission.
+            git restore --source=HEAD -- .github/workflows/bootstrap.yml
+            find .github/workflows -maxdepth 1 -type f ! -name bootstrap.yml -delete
 
-          unzip -q TavoLink-YunZhao-v1.1.0-GitHub-AutoBuild.zip \
-            -d /tmp/tavolink_unpack
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
 
-          cp -a \
-            /tmp/tavolink_unpack/TavoLink-YunZhao-GitHub-Build-v1.1.0/. \
-            .
-
-          rm -rf /tmp/tavolink_unpack
-          rm -f TavoLink-YunZhao-v1.1.0-GitHub-AutoBuild.zip
-
-          echo "Project extracted:"
-          ls -la
-
-          echo "Workflows:"
-          find .github/workflows -maxdepth 1 -type f -print || true
-
-      - name: Commit extracted project
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add -A
-
-          if git diff --cached --quiet; then
-            echo "Nothing to commit."
+            if ! git diff --cached --quiet; then
+              git commit -m "feat: bootstrap TavoLink YunZhao v1.1.0"
+              git push origin HEAD:main
+            fi
           else
-            git commit -m "feat: bootstrap TavoLink YunZhao v1.1.0"
-            git push
+            echo "Archive already consumed; building committed source tree."
           fi
+
+          test -f pubspec.yaml
+          test -f lib/main.dart
+          test -f tool/bootstrap_platforms.sh
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Generate Android/iOS native scaffolds
+        run: bash tool/bootstrap_platforms.sh
+
+      - name: Flutter environment
+        run: flutter doctor -v
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Unit tests
+        run: flutter test
+
+      - name: MCP/API/Search/Learning contract tests
+        run: |
+          python3 tool/source_selfcheck.py
+          python3 tool/runtime_contract_test.py
+          python3 tool/learning_contract_test.py
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Prepare Android artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(awk '/^version:/{print $2}' pubspec.yaml | cut -d+ -f1)"
+          mkdir -p dist
+          cp build/app/outputs/flutter-apk/app-release.apk "dist/TavoLink-YunZhao-${VERSION}.apk"
+          sha256sum "dist/TavoLink-YunZhao-${VERSION}.apk" > "dist/TavoLink-YunZhao-${VERSION}.apk.sha256"
+          echo "APP_VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: TavoLink-YunZhao-Android-${{ env.APP_VERSION }}
+          path: |
+            dist/*.apk
+            dist/*.apk.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+  ios-unsigned:
+    name: iOS unsigned IPA
+    needs: bootstrap-android
+    runs-on: macos-latest
+    timeout-minutes: 75
+    steps:
+      - name: Checkout bootstrapped source
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Generate Android/iOS native scaffolds
+        run: bash tool/bootstrap_platforms.sh
+
+      - name: Xcode / Flutter environment
+        run: |
+          xcodebuild -version
+          pod --version
+          flutter doctor -v
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Unit tests
+        run: flutter test
+
+      - name: Build iOS without code signing
+        run: flutter build ios --release --no-codesign
+
+      - name: Package unsigned IPA
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(awk '/^version:/{print $2}' pubspec.yaml | cut -d+ -f1)"
+          rm -rf build/unsigned_ipa dist
+          mkdir -p build/unsigned_ipa/Payload dist
+          cp -R build/ios/iphoneos/Runner.app build/unsigned_ipa/Payload/
+          (cd build/unsigned_ipa && zip -qry "../../dist/TavoLink-YunZhao-${VERSION}-unsigned.ipa" Payload)
+          shasum -a 256 "dist/TavoLink-YunZhao-${VERSION}-unsigned.ipa" > "dist/TavoLink-YunZhao-${VERSION}-unsigned.ipa.sha256"
+          echo "APP_VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Upload iOS IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: TavoLink-YunZhao-iOS-${{ env.APP_VERSION }}-unsigned
+          path: |
+            dist/*-unsigned.ipa
+            dist/*-unsigned.ipa.sha256
+          if-no-files-found: error
+          retention-days: 30
